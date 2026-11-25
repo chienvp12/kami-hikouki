@@ -1,0 +1,9 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="53" height="42" viewBox="0 0 53 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Rectangle 33">
+<path d="M0 10C0 4.47715 4.47715 0 10 0H43C48.5228 0 53 4.47715 53 10V32C53 37.5229 48.5228 42 43 42H10C4.47715 42 0 37.5228 0 32V10Z" fill="white"/>
+<mask id="stroke0_0_4" fill="white">
+<path d="M0 10C0 4.47715 4.47715 0 10 0H43C48.5228 0 53 4.47715 53 10V32C53 37.5229 48.5228 42 43 42H10C4.47715 42 0 37.5228 0 32V10Z"/>
+</mask>
+<path d="M10 42H43C48.5228 42 53 37.5228 53 32V10C53 4.47715 48.5228 0 43 0H10C4.47715 0 0 4.47715 0 10V32C0 37.5228 4.47715 42 10 42Z" stroke="#9DC3DB" mask="url(#stroke0_0_4)"/>
+</g>
+</svg>
