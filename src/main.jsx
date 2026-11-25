@@ -8,10 +8,12 @@ const example = '久しぶりに一緒にご飯しよう！ずっと行きたか
 const kinds = ['デジタルギフト', 'オリジナルギフト']
 const filters = ['すべて', '東京エリア', 'ランチ', 'ディナー']
 const gifts = [
-  { name: 'レストランソラノテーブル', detail: '（2名・ランチ）', amount: 8800, photo: '394c4.png', filter: 2 },
-  { name: 'メゾン・ド・フルール', detail: '（2名・アフタヌーンティー）', amount: 6500, photo: 'f876d.png', filter: 1 },
-  { name: '旬彩和食処庵', detail: '（2名・ディナーコース）', amount: 12000, photo: '4ad34.png', filter: 3 },
+  { name: 'レストランソラノテーブル', meal: 'ランチ', amount: 8800, photo: '394c4.png', filter: 2 },
+  { name: 'メゾン・ド・フルール', meal: 'アフタヌーンティー', amount: 6500, photo: 'f876d.png', filter: 1 },
+  { name: '旬彩和食処庵', meal: 'ディナーコース', amount: 12000, photo: '4ad34.png', filter: 3 },
 ]
+const guestOptions = Array.from({ length: 10 }, (_, index) => index + 1)
+const giftDetail = (gift, guests) => '（' + guests + '名・' + gift.meal + '）'
 const tabs = [
   { label: 'デザイン', img: '0ef8f.svg', options: ['シンプル', 'ナチュラル', 'かわいい'], icons: ['6607b.svg', '57185.svg', '303df.svg'] },
   { label: '紙質', img: '7bdd5.svg', options: ['和紙', 'マット', '光沢'] },
@@ -172,9 +174,19 @@ function GiftPhoto({ gift, compact }) {
   </div>
 }
 
-function Catalog({ kind, setKind, filter, setFilter, gift, setGift, next }) {
+function Catalog({ kind, setKind, filter, setFilter, gift, setGift, guestCounts, setGuestCounts, next }) {
   const [touched, setTouched] = useState(false)
   const displayed = gifts.filter(item => filter < 2 || item.filter === filter)
+  function chooseGift(item) {
+    setGift(item)
+    setTouched(true)
+  }
+
+  function chooseGuestCount(item, count) {
+    setGuestCounts(previous => ({ ...previous, [item.name]: count }))
+    chooseGift(item)
+  }
+
   function chooseFilter(index) {
     setFilter(index)
     const matching = gifts.find(item => item.filter === index)
@@ -203,18 +215,26 @@ function Catalog({ kind, setKind, filter, setFilter, gift, setGift, next }) {
         >{label}</button>)}
       </div>
       <div className="gift-list">
-        {displayed.map(item => <button
-          key={item.name} type="button" aria-pressed={gift === item}
-          className={'gift-card surface panel-shadow ' + (touched && gift === item ? 'is-picked' : '')}
-          onClick={() => { setGift(item); setTouched(true) }}
-        >
-          <GiftPhoto gift={item} />
-          <span className="min-w-0 grow">
-            <strong className="block">{item.name}</strong>
-            <span className="my-[4px] block text-[11px]">{item.detail}</span>
-            <b>{yen(item.amount)}</b> <span className="text-[8px]">（税込）</span>
-          </span>
-        </button>)}
+        {displayed.map(item => {
+          const guests = guestCounts[item.name] ?? 2
+          return <div key={item.name} className={'gift-card surface panel-shadow ' + (touched && gift === item ? 'is-picked' : '')}>
+            <GiftPhoto gift={item} />
+            <div className="min-w-0 grow">
+              <button type="button" aria-pressed={gift === item} className="gift-card-choice" onClick={() => chooseGift(item)}>
+                <strong>{item.name}</strong>
+              </button>
+              <div className="guest-picker">
+                <span aria-hidden="true">{giftDetail(item, guests)}</span>
+                <Icon name="14b43.svg" size={10} />
+                <select aria-label={item.name + 'の人数'} value={guests}
+                  onChange={event => chooseGuestCount(item, Number(event.target.value))}>
+                  {guestOptions.map(count => <option key={count} value={count}>{count}名</option>)}
+                </select>
+              </div>
+              <b>{yen(item.amount)}</b> <span className="text-[8px]">（税込）</span>
+            </div>
+          </div>
+        })}
       </div>
     </div>
     <Actions forward={next} next="次へ進む" wide />
@@ -375,9 +395,9 @@ function VideoStep({ video, setVideo, fileInput, onFile, show, back, next }) {
   </>
 }
 
-function Review({ options, message, sender, video, gift, kind, edit, next }) {
+function Review({ options, message, sender, video, gift, guests, kind, edit, next }) {
   const values = [
-    ['ギフト内', gift.name + ' （2名）'],
+    ['ギフト内', gift.name + ' （' + guests + '名）'],
     ['カードデザイン', options[0] === 0 ? 'シンプル（紙飛行機）' : tabs[0].options[options[0]]],
     ['紙質・フォント', tabs[1].options[options[1]] + '/' + tabs[2].options[options[2]]],
     ['メッセージ', message ? '「' + Array.from(message).slice(0, 5).join('') + '...」' : '—'],
@@ -399,7 +419,7 @@ function Review({ options, message, sender, video, gift, kind, edit, next }) {
           <GiftPhoto gift={gift} compact />
           <div>
             <b>{gift.name}</b>
-            <p className="text-[10px] font-medium text-black/50">{gift.detail}</p>
+            <p className="text-[10px] font-medium text-black/50">{giftDetail(gift, guests)}</p>
             <p className="text-[10px]"><b>{yen(gift.amount)}</b><span className="text-black/50">（税込）</span></p>
           </div>
         </div>
@@ -423,7 +443,7 @@ function Review({ options, message, sender, video, gift, kind, edit, next }) {
   </>
 }
 
-function Checkout({ gift, delivery, setDelivery, sample, setSample, payment, setPayment, back, order }) {
+function Checkout({ gift, guests, delivery, setDelivery, sample, setSample, payment, setPayment, back, order }) {
   const set = (key, value) => setDelivery(previous => ({ ...previous, [key]: value }))
   const payments = [
     ['クレジットカード', 'b7b09.svg', 20],
@@ -462,7 +482,7 @@ function Checkout({ gift, delivery, setDelivery, sample, setSample, payment, set
             <h2 className="flex items-center gap-1 font-bold"><Icon name="f9bc1.svg" size={14} />お支払い金額</h2>
             <b>{yen(gift.amount)}</b>
           </div>
-          <p className="mt-[10px] font-medium">{gift.name}{gift.detail}</p>
+          <p className="mt-[10px] font-medium">{gift.name}{giftDetail(gift, guests)}</p>
           <div className="shipping-fee">
             <span>招待状制作・郵送料</span><span className="text-paper-ink">無料</span>
           </div>
@@ -520,6 +540,7 @@ function App() {
   const [kind, setKind] = useState(1)
   const [filter, setFilter] = useState(0)
   const [gift, setGift] = useState(gifts[0])
+  const [guestCounts, setGuestCounts] = useState({})
   const [options, setOptions] = useState([0, 0, 0, 0])
   const [message, setMessage] = useState(example)
   const [sender, setSender] = useState('')
@@ -602,15 +623,16 @@ function App() {
   const home = () => go(1)
   const next = () => go(step + 1)
   const back = () => go(step - 1)
+  const guests = guestCounts[gift.name] ?? 2
   const views = {
     1: <Home start={start} show={setModal} />,
     2: <Login next={next} home={home} show={setModal} />,
-    3: <Catalog {...{ kind, setKind, filter, setFilter, gift, setGift, next }} />,
+    3: <Catalog {...{ kind, setKind, filter, setFilter, gift, setGift, guestCounts, setGuestCounts, next }} />,
     4: <Design {...{ options, setOptions, kind, back, next }} />,
     5: <Message {...{ options, message, setMessage, sender, setSender, back, next }} show={setModal} />,
     6: <VideoStep {...{ video, setVideo, fileInput, onFile, back, next }} show={setModal} />,
-    7: <Review {...{ options, message, sender, video, gift, kind, next }} edit={back} />,
-    8: <Checkout {...{ gift, delivery, setDelivery, sample, setSample, payment, setPayment, back }} order={() => setModal('購入を確定する')} />,
+    7: <Review {...{ options, message, sender, video, gift, guests, kind, next }} edit={back} />,
+    8: <Checkout {...{ gift, guests, delivery, setDelivery, sample, setSample, payment, setPayment, back }} order={() => setModal('購入を確定する')} />,
   }
   return <div className="app-frame">
     <Artwork step={step} />

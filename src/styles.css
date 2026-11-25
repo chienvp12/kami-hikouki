@@ -99,9 +99,16 @@ button:active { transform: translateY(1px); }
 .filters { display: grid; grid-template-columns: .9fr 1.03fr .9fr 1fr; gap: 7px; margin-top: 13px; padding-right: 4%; }
 .filters .chip { padding-inline: 2px; }
 .gift-list { min-height: 335px; display: grid; align-content: start; gap: 13px; margin: 21px -2px 0 3px; }
-.gift-card { display: flex; align-items: center; gap: 12px; min-height: 103px; border-radius: 10px; padding: 12px 10px 12px 19px; text-align: start; }
+.gift-card { position: relative; display: flex; align-items: center; gap: 12px; min-height: 103px; border-radius: 10px; padding: 12px 10px 12px 19px; text-align: start; transition: transform 180ms ease, box-shadow 180ms ease; }
 .gift-card + .gift-card { border-color: #9dc3db; }
 .gift-card.is-picked { box-shadow: 0 0 0 1px #00619d, 0 4px 4px rgb(0 0 0 / 25%); }
+.gift-card-choice { display: block; text-align: start; }
+.gift-card-choice::after { content: ''; position: absolute; inset: 0; border-radius: 10px; }
+.gift-card-choice:active { transform: none; }
+.guest-picker { position: relative; z-index: 1; display: flex; width: fit-content; max-width: 100%; align-items: center; gap: 4px; min-height: 24px; font-size: 11px; }
+.guest-picker img { transform: rotate(180deg); }
+.guest-picker select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; }
+.guest-picker:focus-within { outline: 2px solid #00619d; outline-offset: 2px; border-radius: 3px; }
 .gift-photo { position: relative; overflow: hidden; width: 96px; height: 73px; flex: none; border-radius: 10px; }
 .gift-photo img { position: absolute; max-width: none; object-fit: cover; }
 .photo-0 img { width: 107px; height: 110px; left: -2.5px; top: -27px; }
